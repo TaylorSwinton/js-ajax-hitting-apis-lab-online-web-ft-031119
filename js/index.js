@@ -16,6 +16,11 @@ function displayRepositories() {
     const repoList = `<ul>
       ${repos.map(
         r =>
-      )}</ul>`;
+          '<li>' +
+          r.name +
+          ' - <a href="#" data-repo="' +
+          r.name +
+          '""'
+      ).join('')}</ul>`;
       document.getElementById('repositories').innerHTML = repoList;
 }
