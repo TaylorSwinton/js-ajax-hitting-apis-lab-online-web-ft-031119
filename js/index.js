@@ -1,26 +1,74 @@
-const URL = 'https://api.github.com';
+const rootURL = 'https://api.github.com';
 
 function getRepositories() {
-    const name = document.getElementById('username').value;
-    const uri = URL + '/users/' + name + '/repos';
-    const xhr = new HMLHttpRequest();
-    xhr.addEventListener('load', displayRepositories);
-    xhr.open('GET', uri)
-    xhr.send();
-      return false;
+  const name = document.getElementById('username').value;
+  const uri = rootURL + '/users/' + name + '/repos';
+  const xhr = new XMLHttpRequest();
+  xhr.addEventListener('load', displayRepositories);
+  xhr.open('GET', uri);
+  xhr.send();
+    return false;
 }
 
 function displayRepositories() {
-    var repos = JSON.parse(this.resoponseText);
-    console.log(repos);
-    const repoList = `<ul>
-      ${repos.map(
-        r =>
-          '<li>' +
-          r.name +
-          ' - <a href="#" data-repo="' +
-          r.name +
-          '""'
-      ).join('')}</ul>`;
-      document.getElementById('repositories').innerHTML = repoList;
+  const repos = JSON.parse(this.responseText);
+  console.log(repos);
+  const repoList =
+    '<ul>' +
+    repos.map(r => {
+      const dataUsername = 'data-username="' + r.owner.login + '"';
+      const dataRepoName = 'data-repository="' + r.name + '"';
+      return `
+        <li>
+          <h2>${r.name}</h2>
+          <a href="${r.html_url}">${r.html_url}</a><br>
+          <a href="#" ${dataRepoName} ${dataUsername} onclick="getCommits(this)">Get Commits</a><br>
+          <a href="#" ${dataRepoName} ${dataUsername} onclick="getBranches(this)">Get Branches</a></li>
+        </li>
+      `;
+    }).join('') + '</ul>';
+    document.getElementById('repositories').innerHTML = repoList;
+}
+
+function getCommits(el) {
+  const name = el.dataset.repository;
+  const uri = rootURL + '/repos/' + el.dataset.username + '/' + name + '/commits';
+  const xhr = new XMLHttpRequest();
+  xhr.addEventListener('load', displayCommits);
+  xhr.open('GET', uri);
+  xhr.send();
+}
+
+function displayCommits() {
+  const commits = JSON.parse(this.responseText);
+  const commitsList = `<ul>${commits
+    .map(
+      commit =>
+        '<li><h3>' +
+        commit.commit.author.name +
+        ' (' +
+        commit.author.login +
+        ')</h3>' +
+        commit.commit.message +
+        '</li>'
+    )
+    .join('')}</ul>`;
+  document.getElementById('details').innerHTML = commitsList;
+}
+
+function getBranches(el) {
+ const name = el.dataset.repository;
+ const uri = rootURL + '/repos/' + el.dataset.username + '/' + name + '/branches';
+ const xhr = new XMLHttpRequest();
+ xhr.addEventListener('load', displayBranches);
+ xhr.open('GET', uri);
+ xhr.send();
+}
+
+function displayBranches() {
+  const branches = JSON.parse(this.responseText);
+  const branchesList = `<ul>${branches
+    .map(branch => '<li>' + branch.name + '</li>')
+    .join('')}</ul>`;
+  document.getElementById('details').innerHTML = branchesList;
 }
